@@ -1,0 +1,11 @@
+@startuml
+class ItemEdit{
+addItem()
+delItem()
+editItem()
+editItemDesc()
+editItemDue()
+checkItem()
+saveItem()
+}
+@enduml

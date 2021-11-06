@@ -1,0 +1,34 @@
+@startuml
+class Application {
+    main(String[])
+    start()
+    launch()
+}
+
+Application *-- ListEdit
+Application *-- ApplicationController
+
+class ListEdit{
+addList()
+delList()
+editList()
+dispList()
+dispCheck()
+dispNotCheck()
+saveList()
+loadList()
+}
+
+class ItemEdit{
+addItem()
+delItem()
+editItem()
+editItemDesc()
+editItemDue()
+checkItem()
+saveItem()
+}
+
+ListEdit --ItemEdit
+
+@enduml

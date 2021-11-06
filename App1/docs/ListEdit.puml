@@ -1,0 +1,25 @@
+@startuml
+class ListEdit{
+addList()
+delList()
+editList()
+dispList()
+dispCheck()
+dispNotCheck()
+saveList()
+loadList()
+}
+
+class ItemEdit{
+addItem()
+delItem()
+editItem()
+editItemDesc()
+editItemDue()
+checkItem()
+saveItem()
+}
+
+ListEdit --ItemEdit
+
+@enduml
