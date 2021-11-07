@@ -1,6 +1,5 @@
 package baseline;
 
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -73,9 +72,10 @@ public class Item {
     public void setIsComplete(boolean isComplete) {
         this.isComplete.set(isComplete);
     }
-    public BooleanProperty isDeleteProperty() {
+    public BooleanProperty isCompleteProperty() {
         return isComplete;
     }
+
 
 
     @Override
@@ -84,4 +84,3 @@ public class Item {
     }
 
 }
-

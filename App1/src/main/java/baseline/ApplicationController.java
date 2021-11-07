@@ -1,23 +1,26 @@
-/*
- *  UCF COP3330 Fall 2021 Application Assignment 1 Solution
- *  Copyright 2021 Mohit Ballikar
- */
 package baseline;
 
+import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.beans.value.ChangeListener;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 import java.io.*;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,11 +28,13 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.ResourceBundle;
 
 
 //View-Controller for the Item table.
 
-public class ApplicationController {
+public class ApplicationController  {
 
     @FXML
     private TextField filterField;
@@ -43,15 +48,18 @@ public class ApplicationController {
     private TableColumn<Item, String> itemDueDateColumn;
     @FXML
     private TableColumn<Item, String> itemStatusColumn;
+    @FXML
+    private TableColumn<Item, Boolean> isCompleteColumn;
 
     @FXML private TextField itemNameField;
     @FXML private TextField itemDescriptionField;
     @FXML private DatePicker itemDueDateField;
     @FXML private CheckBox itemStatusField;
-
+    @FXML
+    private CheckBox checkBox;
 
     private ObservableList<Item> masterData = FXCollections.observableArrayList();
-
+    private static boolean chck;
     private static final String ITEMS_FILE_NAME = "data/Item.txt";
 
     /**
@@ -64,18 +72,7 @@ public class ApplicationController {
         {
             masterData.add(new Item( b.getItemName(), b.getItemDescription(), b.getItemDueDate(), b.getItemStatus(), false));
         }
-        /*
-        masterData.add(new Person("Hans", "Muster"));
-        masterData.add(new Person("Ruth", "Mueller"));
-        masterData.add(new Person("Heinz", "Kurz"));
-        masterData.add(new Person("Cornelia", "Meier"));
-        masterData.add(new Person("Werner", "Meyer"));
-        masterData.add(new Person("Lydia", "Kunz"));
-        masterData.add(new Person("Anna", "Best"));
-        masterData.add(new Person("Stefan", "Meier"));
-        masterData.add(new Person("Martin", "Mueller"));
 
-         */
     }
 
     /**
@@ -87,40 +84,48 @@ public class ApplicationController {
     @FXML
     private void initialize() {
 
+        //Add Tool Tips.
+        Tooltip itemNameToolTip = new Tooltip("Add an Item");
+        itemNameToolTip.setFont(Font.font("Verdana", 10));
+        itemNameField.setTooltip(itemNameToolTip);
+
+        Tooltip itemDescToolTip = new Tooltip("Add an Item Description (255 Chars)");
+        itemDescToolTip.setFont(Font.font("Verdana", 10));
+        itemDescriptionField.setTooltip(itemDescToolTip);
+
+        Tooltip itemDueDateToolTip = new Tooltip("Select a Due Date (Optional)");
+        itemDueDateToolTip.setFont(Font.font("Verdana", 10));
+        itemDueDateField.setTooltip(itemDueDateToolTip);
+
+        Tooltip itemStatusToolTip = new Tooltip("Mark Item Complete or Pending");
+        itemStatusToolTip.setFont(Font.font("Verdana", 10));
+        itemStatusField.setTooltip(itemStatusToolTip);
+
+
         itemTable.getSelectionModel().cellSelectionEnabledProperty().set(true);
 
         // 0. Initialize the columns.
         itemNameColumn.setCellValueFactory(cellData -> cellData.getValue().itemNameProperty());
-        itemDescriptionColumn.setCellValueFactory(cellData -> cellData.getValue().itemDescriptionProperty());
+
+        //itemDescriptionColumn.setCellValueFactory(cellData -> cellData.getValue().itemDescriptionProperty());
+        //itemDescriptionColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+
+        itemDescriptionColumn.setEditable(true);
+        itemDescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("itemDescription"));
         itemDescriptionColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        PropertyValueFactory<Item, String> countryCellValueFactory = new PropertyValueFactory<>("itemDescription");
+        itemDescriptionColumn.setCellValueFactory(countryCellValueFactory);
         itemDueDateColumn.setCellValueFactory(cellData -> cellData.getValue().itemDueDateProperty());
         itemDueDateColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         itemStatusColumn.setCellValueFactory(cellData -> cellData.getValue().itemStatusProperty());
+        isCompleteColumn.setCellValueFactory(cellData -> cellData.getValue().isCompleteProperty());
 
-
-        itemTable.getColumns().setAll(itemNameColumn, itemDescriptionColumn,itemDueDateColumn,itemStatusColumn);
+        itemTable.getColumns().setAll(itemNameColumn, itemDescriptionColumn,itemDueDateColumn,itemStatusColumn, isCompleteColumn);
         itemTable.setEditable(true);
 
         //Only Update the Item Description.
 
-        //Modifying the firstName property
-        itemDescriptionColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<Item, String>>() {
-            @Override
-            public void handle(TableColumn.CellEditEvent<Item, String> t) {
-                ((Item) t.getTableView().getItems().get(t.getTablePosition().getRow())).setItemDescription(t.getNewValue());
-                itemTable.refresh();
-            }
-        });
-
-
-        //Only Update the Item Due Date.
-        itemDueDateColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<Item, String>>() {
-            @Override
-            public void handle(TableColumn.CellEditEvent<Item, String> t)
-            {
-                ((Item) t.getTableView().getItems().get(t.getTablePosition().getRow())).setItemDueDate(t.getNewValue());
-            }
-        });
+        //Modifying the Description property
 
 
 
@@ -136,7 +141,6 @@ public class ApplicationController {
                     return true;
                 }
 
-                System.out.println("Inside search");
                 // Compare first name and last name of every person with filter text.
                 String lowerCaseFilter = newValue.toLowerCase();
 
@@ -157,12 +161,15 @@ public class ApplicationController {
 
         // 5. Add sorted (and filtered) data to the table.
         itemTable.setItems(sortedData);
-
-        // itemTable.getSelectionModel().selectedIndexProperty().addListener(new RowSelectChangeListener());
-
     }
 
-
+    @FXML
+    void checkBoxInitialize(ActionEvent event) {
+        chck = checkBox.isSelected() ? true : false;
+        for (Item n : masterData) {
+            n.setIsComplete(chck);
+        }
+    }
 
     public void LoadDatafromFileToCollections()
     {
@@ -224,39 +231,208 @@ public class ApplicationController {
     }
 
     @FXML
+    protected void resetFields(ActionEvent event)
+    {
+        itemNameField.setText("");
+        itemDescriptionField.setText("");
+        itemStatusField.setSelected(false);
+    }
+
+
+    @FXML
     protected void loadDataItem(ActionEvent event)
     {
+        boolean bStatusFlag  = false;
+        ObservableList<Item> reloadData = FXCollections.observableArrayList();
 
+        Alert a =
+                new Alert(Alert.AlertType.CONFIRMATION,
+                        "Do you want to reload the data from the File.?", ButtonType.YES,
+                        ButtonType.NO);
+        Optional<ButtonType> confirm = a.showAndWait();
+        if (confirm.isPresent() && confirm.get() == ButtonType.YES)
+        {
+            List<Item> items = LoadDatafromFileToCollections(ITEMS_FILE_NAME);
+            for (Item b : items)
+            {
+                if ( b.getItemStatus().equals("Complete"))
+                {
+                    bStatusFlag = true;
+                }
+                reloadData.add(new Item( b.getItemName(), b.getItemDescription(), b.getItemDueDate(), b.getItemStatus(), bStatusFlag));
+            }
+
+            itemTable.setItems(reloadData);
+        }
     }
 
     @FXML
     protected void addItem(ActionEvent event)
     {
-        try {
-            String sDateField = "";
-            String sStatusField = "Pending";
-            Boolean bStatusField = false;
 
+        String sDateField = "";
+        String sStatusField = "Pending";
+        Boolean bStatusField = false;
+        Boolean bUniqueItemExists = true;
+
+        if ( itemDueDateField != null) {
             LocalDate date = itemDueDateField.getValue();
-            sDateField = date.toString();
-            if (sDateField.equals("") || sDateField == null) {
-                sDateField = "9999-99-99";
+            if ( date != null) {
+                sDateField = date.toString();
+                if (sDateField.equals("") || sDateField == null) {
+                    sDateField = "9999-99-99";
+                }
             }
-            System.out.println("Selected date: " + sDateField);
+        }
+        else
+            sDateField = " ";
 
+
+        if (itemStatusField != null) {
             if (itemStatusField.isSelected()) {
                 bStatusField = true;
                 sStatusField = "Complete";
             }
-            //ObservableList<Item> data = itemTable.getItems();
+        }
 
-            ObservableList<Item> data =  FXCollections.observableArrayList();
-            data = itemTable.getItems();
-            System.out.println("Value of data = " + data.size());
+        //Check if the Description > 256
+        if (itemDescriptionField.getText().length() > 256 )
+        {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Length Exceeded");
+            alert.setHeaderText("Maximum length = 256");
+            alert.setContentText("Please limit the Description to 256 chars only.");
+            alert.showAndWait();
+        }
+        else if (itemDescriptionField.getText().equals("") || itemDescriptionField.getText().length() == 0)
+        {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No Item Description");
+            alert.setHeaderText("Item Description is empty");
+            alert.setContentText("Please input a valid item description.");
+            alert.showAndWait();
+        }
 
-            data.add(new Item(itemNameField.getText(), itemDescriptionField.getText(), sDateField , sStatusField, false));
+        else if (itemNameField.getText().equals("") || itemNameField.getText().length() == 0)
+        {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No Item");
+            alert.setHeaderText("Item Name Empty");
+            alert.setContentText("Please input a valid item name.");
+            alert.showAndWait();
+        }
+
+        else {
+
+            //Create a new List to hold values.
+            ObservableList<Item> newItemdata = FXCollections.observableArrayList();
+            ObservableList<Item> data = itemTable.getItems();
+
+            //Check if the item is unique.
+            int itemsize = data.size();
+            if (itemsize > 99) //Only 100 Unique items needs to be added.
+            {
+                // Nothing selected.
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Maximum Items Limit Reached");
+                alert.setHeaderText("Maximum Items Limit Reached");
+                alert.setContentText("Maximum Limit [100] Items Reached.");
+                alert.showAndWait();
+                bUniqueItemExists = false;
+
+            }
+            else {
+                for (int i = 0; i < itemsize; i++) {
+                    if (data.get(0).getItemName().equals(itemNameField.getText())) {
+                        // Nothing selected.
+                        Alert alert = new Alert(Alert.AlertType.WARNING);
+                        alert.setTitle("Not Valid Entry");
+                        alert.setHeaderText("Duplicate Item");
+                        alert.setContentText("Please enter a Unique Item Name. This item is already in the List.");
+                        alert.showAndWait();
+                        bUniqueItemExists = false;
+                        break;
+                    }
+                }
+            }
+            if (bUniqueItemExists) {
+                newItemdata.add(new Item(itemNameField.getText(), itemDescriptionField.getText(), sDateField, sStatusField, bStatusField));
+                for (Item b : data) {
+                    newItemdata.add(b);
+                }
+                itemTable.setItems(newItemdata);
+                itemTable.refresh();
+
+                //Clear the Input fields
+                itemStatusField.setText("");
+                itemDescriptionField.setText("");
+                itemStatusField.setText("");
+            }
+            //initialize();
+        }
+
+    }
+
+    @FXML
+    protected void deleteItem(ActionEvent event)
+    {
+        int selectedIndex = itemTable.getSelectionModel().getSelectedIndex();
+        System.out.println("Deleted Index ==" + selectedIndex);
+
+        if (selectedIndex >= 0)
+        {
+            // itemTable.getItems().remove(selectedIndex);
+
+            //Create a new List to hold values.
+            ObservableList<Item> newItemdata = FXCollections.observableArrayList();
+            ObservableList<Item> data = itemTable.getItems();
+            TreeItem<Item> itemRoot = null;
+            for (Item b : data)
+            {
+                newItemdata.add(b);
+            }
+            newItemdata.remove(selectedIndex);
+            itemTable.setItems(newItemdata);
+            itemTable.refresh();
+
+        } else {
+
+            // Nothing selected.
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No Selection");
+            alert.setHeaderText("No Item Selected");
+            alert.setContentText("Please select an Item in the table.");
+            alert.showAndWait();
+        }
+    }
+
+    @FXML
+    protected void clearAllItems(ActionEvent event)
+    {
+        try
+        {
+            Alert a =
+                    new Alert(Alert.AlertType.CONFIRMATION,
+                            "Are you sure you want to Clear All Items?", ButtonType.YES,
+                            ButtonType.NO);
+            Optional<ButtonType> confirm = a.showAndWait();
+            if (confirm.isPresent() && confirm.get() == ButtonType.YES) {
 
 
+                //Create a new List to hold values.
+                ObservableList<Item> newItemdata = FXCollections.observableArrayList();
+                ObservableList<Item> data = itemTable.getItems();
+                for (Item b : data) {
+                    newItemdata.add(b);
+                }
+
+                for (Item c : data) {
+                    newItemdata.remove(c);
+                }
+
+                itemTable.setItems(newItemdata);
+                itemTable.refresh();
+            }
         }
         catch (Exception e)
         {
@@ -265,29 +441,57 @@ public class ApplicationController {
 
     }
 
-    public void saveData(ActionEvent event) throws IOException
-    {
-        //If the file exist delete it and save new info
-        File file = new File(ITEMS_FILE_NAME);
-        if(file.exists()) {
-            file.delete();
-        }
-
-        try(PrintWriter writer = new PrintWriter(new FileOutputStream(new File(ITEMS_FILE_NAME),true /* append = true */)))
+    @FXML
+    public void saveData(ActionEvent event) throws IOException {
+        Alert a =
+                new Alert(Alert.AlertType.CONFIRMATION,
+                        "Are you sure you want to Save, this will overwrite on existing data file?", ButtonType.YES,
+                        ButtonType.NO);
+        Optional<ButtonType> confirm = a.showAndWait();
+        if (confirm.isPresent() && confirm.get() == ButtonType.YES)
         {
-            //writer.println(root.getValue() + "=" + parent);
-            for (int row = 0; row < itemTable.getItems().size(); row++)
-            {
-                StringBuilder stringBuilder = new StringBuilder(255);
-                Item readItem = itemTable.getItems().get(row);
-                stringBuilder.append(readItem.getItemName()+"|"+readItem.getItemDescription()+"|"+ readItem.getItemDueDate()+"|"+readItem.getItemStatus());
-                System.out.println("DATA TO BE WRITTEN = " + stringBuilder.toString());
-                writer.println(stringBuilder.toString());
+
+            //If the file exist delete it and save new info
+            File file = new File(ITEMS_FILE_NAME);
+            if (file.exists()) {
+                file.delete();
             }
-            writer.close();
+
+            try (PrintWriter writer = new PrintWriter(new FileOutputStream(new File(ITEMS_FILE_NAME), true /* append = true */))) {
+                //writer.println(root.getValue() + "=" + parent);
+                for (int row = 0; row < itemTable.getItems().size(); row++) {
+                    StringBuilder stringBuilder = new StringBuilder(255);
+                    Item readItem = itemTable.getItems().get(row);
+                    stringBuilder.append(readItem.getItemName() + "|" + readItem.getItemDescription() + "|" + readItem.getItemDueDate() + "|" + readItem.getItemStatus());
+                    //System.out.println("DATA TO BE WRITTEN = " + stringBuilder.toString());
+                    writer.println(stringBuilder.toString());
+                }
+                writer.close();
+            } catch (FileNotFoundException ex) {
+                System.out.println("Exception e " + ex.toString());
+            }
         }
-        catch (FileNotFoundException ex) {
-            System.out.println("Exception e "+ ex.toString());
+    }
+
+
+    @FXML
+    protected void closeApplication(ActionEvent event)
+    {
+        try {
+            Alert a =
+                    new Alert(Alert.AlertType.CONFIRMATION,
+                            "Are you sure you want to quit?",
+                            ButtonType.YES,
+                            ButtonType.NO);
+            Optional<ButtonType> confirm = a.showAndWait();
+            if (confirm.isPresent() && confirm.get() == ButtonType.YES) {
+
+                Platform.exit();
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println("ERROR = " + e.toString());
         }
     }
 

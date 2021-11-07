@@ -1,18 +1,10 @@
-/*
- *  UCF COP3330 Fall 2021 Application Assignment 1 Solution
- *  Copyright 2021 Mohit Ballikar
- */
 package baseline;
 
-//import javafx.application.Application;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
-import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -21,21 +13,14 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTreeTableCell;
-import javafx.scene.control.cell.ComboBoxTreeTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
-import javafx.stage.Popup;
 import javafx.stage.Stage;
-import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
 import javafx.util.Callback;
 
 import java.io.*;
@@ -48,8 +33,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
+import javafx.collections.transformation.FilteredList;
 
-public class ApplicationList extends javafx.application.Application
+
+public class ToDoListApplication extends Application
 {
 
 
@@ -58,7 +45,7 @@ public class ApplicationList extends javafx.application.Application
     final VBox vb = new VBox();
     final ScrollBar sc = new ScrollBar();
     final ScrollPane sp = new ScrollPane();
-    Stage stage;
+    private Stage stage;
     int i = 0;
     private BorderPane root;
     private final int SIZE = 60;
@@ -71,19 +58,19 @@ public class ApplicationList extends javafx.application.Application
     private TreeTableView<Item> treeTableView ;
     private String sStatus   = "";
 
-    public static final ObservableList names = FXCollections.observableArrayList();
-    public static final ObservableList data =  FXCollections.observableArrayList();
 
 
     private TableView<Item> table = new TableView<Item>();
 
+    ////START OF Running CODE>
 
     @Override
-    public void start(Stage stage) throws IOException {
-        //FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("PersonTable.fxml"));
-        FXMLLoader fxmlLoader = new FXMLLoader(javafx.application.Application.class.getResource("Application.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 320, 240);
-        stage.setTitle("To Do List!");
+    public void start(Stage primaryStage) throws IOException
+    {
+        stage = primaryStage;
+        FXMLLoader fxmlLoader = new FXMLLoader(ToDoListApplication.class.getResource("Application.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 900, 600);
+        stage.setTitle("Item List (Mohit Ballikar) version 1.0");
         stage.setScene(scene);
         stage.show();
     }
@@ -92,106 +79,6 @@ public class ApplicationList extends javafx.application.Application
         launch();
     }
 
-
-/*    @Override
-
-    public void start(Stage primaryStage)
-    {
-
-        stage = primaryStage;
-        root = new BorderPane();
-        root = createBorderPane();
-        Scene scene = new Scene(root, 900, 600);
-        primaryStage.setTitle("Item List (Mohit Ballikar)");
-        primaryStage.setScene(scene);
-        primaryStage.show();
-    }
-    */
-
-    /*
-    @Override
-
-    public void start(Stage primaryStage)
-    {
-
-        stage = primaryStage;
-        //root = new BorderPane();
-        table.setEditable(true);
-
-        Scene scene = new Scene(new Group());
-
-        final Label label = new Label("Item List");
-        label.setFont(new Font("Arial", 10));
-
-        TableColumn itemnamecol = new TableColumn("Item Name");
-        itemnamecol.setMinWidth(100);
-        itemnamecol.setCellValueFactory(new PropertyValueFactory<Item, String>("Itemname"));
-
-        TableColumn itemdesccol = new TableColumn("Item Description");
-        itemdesccol.setMinWidth(100);
-        itemdesccol.setCellValueFactory(new PropertyValueFactory<Item, String>("itemdescription"));
-
-        TableColumn itemduedate = new TableColumn("Due Date");
-        itemduedate.setMinWidth(100);
-        itemduedate.setCellValueFactory(new PropertyValueFactory<Item, String>("itemduedate"));
-
-        TableColumn itemstatuscol = new TableColumn("Item Status");
-        itemstatuscol.setMinWidth(100);
-        itemstatuscol.setCellValueFactory(new PropertyValueFactory<Item, String>("itemstatus"));
-
-        TableColumn isComplete = new TableColumn("Complete?");
-
-        String[] itemValues ;
-        int counter = 0;
-        Item itemData = null;
-        List<Item> items = LoadDatafromFileToCollections(ITEMS_FILE_NAME);
-        TreeItem<Item> itemRoot = null;
-        ObservableList<Item> data = FXCollections.observableArrayList();
-        for (Item b : items)
-        {
-//            System.out.println("Array == " + b);
-
-            if ( counter == 0)
-            {
-                itemData = new Item( b.getItemname(), b.getItemdescription(), b.getItemduedate(), b.getItemStatus(), false);
-                data.add(itemData);
-            }
-            else
-            {
-                itemData = new Item( b.getItemname(), b.getItemdescription(), b.getItemduedate(), b.getItemStatus(), false);
-                data.add(itemData);
-                //TreeItem<Item> itemChildData = new TreeItem<Item>(itemData);
-                //itemRoot.getChildren().add(itemChildData);
-
-            }
-            counter++;
-        }
-
-        table.setItems(data);
-        table.getColumns().addAll(itemnamecol, itemdesccol, itemduedate,itemstatuscol,isComplete);
-
-        final VBox vbox = new VBox();
-        vbox.setSpacing(5);
-        vbox.setPadding(new Insets(10, 0, 0, 10));
-        vbox.getChildren().addAll(label, table);
-
-
-        primaryStage.setTitle("Table View Sample");
-        primaryStage.setWidth(750);
-        primaryStage.setHeight(500);
-        ((Group) scene.getRoot()).getChildren().addAll(vbox);
-
-//        root = createBorderPane();
- //       Scene scene = new Scene(root, 900, 600);
-        primaryStage.setTitle("Item List (Mohit Ballikar)");
-        primaryStage.setScene(scene);
-        primaryStage.show();
-    }
-
-    public static void main(String[] args) {
-        launch(args);
-    }
-*/
 
     public void LoadDataFile(ObservableList names)
     {
@@ -247,7 +134,6 @@ public class ApplicationList extends javafx.application.Application
         TreeItem<Item> itemRoot = null;
         for (Item b : items)
         {
-//            System.out.println("Array == " + b);
 
             if ( counter == 0)
             {
@@ -265,47 +151,20 @@ public class ApplicationList extends javafx.application.Application
         }
         treeTableView.setRoot(itemRoot);
 
-        //btnAdd.setOnAction(e -> btnAdd_Click(btnAdd,treeTableView,"TEST","TEST","TEST","TEST","TEST"));
         btnRemove.setOnAction(e -> btnRemove_Click(btnRemove,treeTableView));
 
-        // btnSave.setOnAction(e -> btnSave_Click(btnSave,itemRoot));
         btnClear.setOnAction(e -> btnClear_Click(btnClear,treeTableView));
 
-        btnSave.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent event)
-            {
-                //If the file exist delete it and save new info
-                File file = new File(ITEMS_FILE_NAME);
-                if(file.exists()) {
-                    file.delete();
-                }
-                TreeItem<Item>  ti = treeTableView.getRoot();
-                saveParentAndChildren(ti, "root");
+        btnSave.setOnAction(event -> {
+            //If the file exist delete it and save new info
+            File file = new File(ITEMS_FILE_NAME);
+            if(file.exists()) {
+                file.delete();
             }
+            TreeItem<Item>  ti = treeTableView.getRoot();
+            saveParentAndChildren(ti, "root");
         });
 
-
-        // Data
-     /*   Item empBoss = new Item("E00", "Abc@gmail.com", //
-                "Boss", "Boss", "Manager",  false);
-
-        Item empSmith = new Item("E01", "Smith@gmail.com", //
-                "Susan", "Smith", "Salesman", true);
-
-        Item empMcNeil = new Item("E02", "McNeil@gmail.com", //
-                "Anne", "McNeil", "Cleck",  false);
-
-        // Root Item
-        TreeItem<Item> itemRoot = new TreeItem<Item>(empBoss);
-        TreeItem<Item> itemSmith = new TreeItem<Item>(empSmith);
-        TreeItem<Item> itemMcNeil = new TreeItem<Item>(empMcNeil);
-
-        itemRoot.getChildren().addAll(itemSmith, itemMcNeil);
-        treeTableView.setRoot(itemRoot);
-
-      */
 
         // Defines how to fill data for each cell.
         // Get value from property of Employee.
@@ -314,40 +173,11 @@ public class ApplicationList extends javafx.application.Application
         itemduedate.setCellValueFactory(new TreeItemPropertyValueFactory<Item, String>("itemduedate"));
         itemStatus.setCellValueFactory(new TreeItemPropertyValueFactory<Item, String>("itemStatus"));
 
-/*
-        itemdelete.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<Item, Boolean>, ObservableValue<Boolean>>() {
-            @Override
-            public ObservableValue<Boolean> call(TreeTableColumn.CellDataFeatures<Item, Boolean> param) {
-                TreeItem<Item> treeItem = param.getValue();
-                Item itm = treeItem.getValue();
-               //// SimpleBooleanProperty booleanProp= new SimpleBooleanProperty(itm.isDelete());
 
-                // Note: singleCol.setOnEditCommit(): Not work for
-                // CheckBoxTreeTableCell.
-                // When "Single?" column change.
-                /*
-                booleanProp.addListener(new ChangeListener<Boolean>() {
-                    @Override
-                    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,
-                                        Boolean newValue) {
-                      //  itm.setDelete(newValue);
-                    }
-                });
-
-                return booleanProp;
-
-
-            }
-        });
-        */
-
-        itemdelete.setCellFactory(new Callback<TreeTableColumn<Item,Boolean>,TreeTableCell<Item,Boolean>>() {
-            @Override
-            public TreeTableCell<Item,Boolean> call(TreeTableColumn<Item,Boolean> p ) {
-                CheckBoxTreeTableCell<Item,Boolean> cell = new CheckBoxTreeTableCell<Item,Boolean>();
-                cell.setAlignment(Pos.CENTER);
-                return cell;
-            }
+        itemdelete.setCellFactory(p -> {
+            CheckBoxTreeTableCell<Item,Boolean> cell = new CheckBoxTreeTableCell<Item,Boolean>();
+            cell.setAlignment(Pos.CENTER);
+            return cell;
         });
 
         grid.getChildren().add(treeTableView);
@@ -377,14 +207,10 @@ public class ApplicationList extends javafx.application.Application
         TextField textName = new TextField();
         textName.setPrefColumnCount(10);
         btnAdd.setDisable(true);
-        textName.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable,
-                                String oldValue, String newValue) {
-                btnAdd.setDisable(false);
-                textName.setText(newValue);
-                System.out.println("TextField Text Changed (newValue: " + newValue + ")\n");
-            }
+        textName.textProperty().addListener((observable, oldValue, newValue) -> {
+            btnAdd.setDisable(false);
+            textName.setText(newValue);
+            System.out.println("TextField Text Changed (newValue: " + newValue + ")\n");
         });
 
 
@@ -396,21 +222,17 @@ public class ApplicationList extends javafx.application.Application
         TextField textDesc = new TextField();
         textDesc.setPrefColumnCount(10);
         btnAdd.setDisable(true);
-        textDesc.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable,
-                                String oldValue, String newValue) {
-                btnAdd.setDisable(false);
+        textDesc.textProperty().addListener((observable, oldValue, newValue) -> {
+            btnAdd.setDisable(false);
 
-                if ( newValue.length() > 256 )
-                {
-                    Alert a = new Alert(Alert.AlertType.CONFIRMATION,
-                            "The Field can only accept 256 characters.",
-                            ButtonType.CLOSE);
-                }
-                textDesc.setText(newValue);
-                System.out.println("TextField Text Changed (newValue: " + newValue + ")\n");
+            if ( newValue.length() > 256 )
+            {
+                Alert a = new Alert(Alert.AlertType.CONFIRMATION,
+                        "The Field can only accept 256 characters.",
+                        ButtonType.CLOSE);
             }
+            textDesc.setText(newValue);
+            System.out.println("TextField Text Changed (newValue: " + newValue + ")\n");
         });
 
 
@@ -465,13 +287,6 @@ public class ApplicationList extends javafx.application.Application
         buttonReset.setOnAction( e -> btnReset_Click (buttonReset, textName,textDesc,datePicker, cbComplete) );
         gridEdit.add(buttonReset, 1,4);
 
-        /*  NOT NEEDED FOR NOW.
-        Button buttonExit = new Button();
-        buttonExit.setText("Exit");
-        buttonExit.setOnAction( e -> btnClose_Click () );
-        gridEdit.add(buttonExit, 2,4);
-
-        */
 
         //Add Buttons for Search.
 
@@ -609,15 +424,6 @@ public class ApplicationList extends javafx.application.Application
         borderPane.setCenter(centerlbl);
         borderPane.setBottom(new Label("Status text:   Manage Item List"));
 
-        // AnchorPane anchorpane = createAnchorPane();
-        // borderPane.setBottom(anchorpane);
-        //FlowPane flow = createFlowPane();
-        //borderPane.setTop(flow);
-        //TilePane tile = createTilePane();
-        //Add a Save Button
-
-
-
 
         GridPane grid = createGridPane(items,btnLoad, btnRemove, btnSave, btnClear);
         borderPane.setCenter(grid);
@@ -640,9 +446,6 @@ public class ApplicationList extends javafx.application.Application
             {
                 if(child.getChildren().isEmpty())
                 {
-                    // System.out.println("*** Value " + child.getValue());
-                    // System.out.println("*** PARSED  " + parseStringToWriteFile(child.getValue().toString()));
-                    //writer.println(child.getValue() + "=" + root.getValue());
                     writer.println(parseStringToWriteFile(child.getValue().toString()));
                 } else {
                     saveParentAndChildren(child, root.getChildren().get(1).toString());
@@ -716,11 +519,6 @@ public class ApplicationList extends javafx.application.Application
     //Add Method to include TreeItem.
     public void btnAdd_Click(Button btnAdd, TreeTableView<Item> tv, String Itemname, String ItemDescription, String Itemduedate, String Itemstatus)
     {
-        System.out.println("Adding Button = " + Itemname);
-
-        //  Item itemData = new Item(itemID,Itemname, ItemDescription, Itemduedate,Itemstatus, false);
-
-        System.out.println("Adding Button 1");
 
         // action event
         EventHandler<ActionEvent> event = new EventHandler<ActionEvent>() {
@@ -729,7 +527,6 @@ public class ApplicationList extends javafx.application.Application
                 Item itemData = new Item(Itemname, ItemDescription, Itemduedate,Itemstatus, false);
                 TreeItem<Item> itemRoot =new TreeItem<Item>(itemData);
                 tv.getRoot().getChildren().add(itemRoot);
-                System.out.println("Adding Button 2");
             }
         };
 
@@ -764,13 +561,6 @@ public class ApplicationList extends javafx.application.Application
     {
         List<Item> items = LoadDatafromFileToCollections("data/items.txt");
 
-        // let's print all the meta data.
-        /*
-        for (Item b : items)
-        {
-            System.out.println("Array == " + b);
-        }
-        */
 
     }
 
@@ -784,7 +574,6 @@ public class ApplicationList extends javafx.application.Application
             // loop until all lines are read
             while (line != null)
             {
-                //System.out.println("****Value of line " + line);
                 String[] attributes = line.split("\\|");
 
                 Item itm = createItem(attributes);
@@ -808,7 +597,6 @@ public class ApplicationList extends javafx.application.Application
         String itemdate = metadata[2];
         String status = metadata[3];
         boolean isComplete = false;
-        // String isDelete = metadata[5];
 
         // create and return book of this metadata
         if ( status.equals("Complete"))
@@ -818,27 +606,6 @@ public class ApplicationList extends javafx.application.Application
         return new Item(itemname, itemdescription,itemdate, status, isComplete );
     }
 
-    /*
-    public AnchorPane createAnchorPane()
-    {
-        AnchorPane anchorpane = new AnchorPane();
-        Button buttonAddItem = new Button("Add Item");
-        Button buttonReset = new Button("Reset");
-        buttonReset.setOnAction( e -> btnReset_Click (buttonReset) );
-        Button buttonExit = new Button("Exit");
-        buttonExit.setOnAction( e -> btnClose_Click () );
-        //anchorpane.setStyle("-fx-background-color: #A9A9A9;");
-        HBox hb = new HBox();
-        hb.setSpacing(10);
-        hb.getChildren().addAll(buttonAddItem, buttonReset, buttonExit);
-        anchorpane.getChildren().addAll(hb);
-        anchorpane.setMinSize(300, 100);
-        AnchorPane.setRightAnchor(hb, 10.0);
-
-        return anchorpane;
-    }
-
-     */
 
     public FlowPane createFlowPane()
     {
@@ -878,14 +645,7 @@ public class ApplicationList extends javafx.application.Application
 
         });
     }
+
+
+
 }
-
-
-/*
-Call helper functions
-Define the list of 256 unique items
-Title of List must be at least 3 characters long
-Need to allow for the user to expand and create a new to do list
-Edits need to be possible
-Filtration of the list must also be there
- */
