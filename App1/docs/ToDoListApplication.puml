@@ -1,0 +1,45 @@
+@startuml
+class ToDoListApplication {
+    main(String[])
+    start()
+    launch()
+}
+
+ToDoListApplication *-- Item
+ToDoListApplication *-- ApplicationController
+
+class Item{
+Item()
+getItemName()
+setItemName()
+itemNameProperty()
+getItemDescription()
+setItemDescription()
+itemDescriptionProperty()
+getItemDueDate()
+setItemDueDate()
+itemDueDateProperty()
+getItemStatus()
+setItemStatus()
+itemStatusProperty()
+getIsComplete()
+setIsComplete()
+isCompleteProperty()
+}
+
+class ApplicationController{
+ApplicationController()
+initialize()
+setStage()
+LoadDatafromFileToCollections()
+createItem()
+resetFields()
+loadDataItem()
+addItem()
+deleteItem()
+clearAllItems()
+saveData()
+closeApplication()
+}
+
+@enduml

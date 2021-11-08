@@ -1,11 +1,17 @@
 @startuml
-class ItemEdit{
+class ApplicationController{
+ApplicationController()
+initialize()
+setStage()
+LoadDatafromFileToCollections()
+createItem()
+resetFields()
+loadDataItem()
 addItem()
-delItem()
-editItem()
-editItemDesc()
-editItemDue()
-checkItem()
-saveItem()
+deleteItem()
+clearAllItems()
+saveData()
+closeApplication()
 }
+ApplicationController <--> ToDoListApplication
 @enduml

@@ -1,0 +1,21 @@
+@startuml
+class Item{
+Item()
+getItemName()
+setItemName()
+itemNameProperty()
+getItemDescription()
+setItemDescription()
+itemDescriptionProperty()
+getItemDueDate()
+setItemDueDate()
+itemDueDateProperty()
+getItemStatus()
+setItemStatus()
+itemStatusProperty()
+getIsComplete()
+setIsComplete()
+isCompleteProperty()
+}
+
+@enduml

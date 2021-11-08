@@ -44,7 +44,7 @@
         <TextField fx:id="itemDescriptionField" layoutX="133.0" layoutY="448.0" prefHeight="25.0" prefWidth="315.0" promptText="Item Description" />
         <Label layoutX="20.0" layoutY="499.0" text="Item Due Date:" />
         <DatePicker fx:id="itemDueDateField" layoutX="133.0" layoutY="495.0" promptText="YYYY-MM-DD" />
-        <CheckBox fx:id="itemStatusField" layoutX="133.0" layoutY="542.0" mnemonicParsing="false" text="Complete" />
+        <CheckBox fx:id="itemStatusField" layoutX="22.0" layoutY="542.0" mnemonicParsing="false" text="Complete" />
 
         <!-- Buttons-->
         <Button fx:id="addButton" layoutX="350.0" layoutY="538.0" mnemonicParsing="false" onAction="#addItem" text="Add Item" />

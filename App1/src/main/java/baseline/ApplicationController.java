@@ -1,26 +1,24 @@
+/*
+ *  UCF COP3330 Fall 2021 Application Assignment 1 Solution
+ *  Copyright 2021 Mohit Ballikar
+ */
 package baseline;
 
 import javafx.application.Platform;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.beans.value.ChangeListener;
+import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-
 import java.io.*;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,13 +27,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.ResourceBundle;
 
 
 //View-Controller for the Item table.
 
 public class ApplicationController  {
-
+//initialize the parts of the gui that are seen for the user as well as within the fxml file
     @FXML
     private TextField filterField;
     @FXML
@@ -57,13 +54,14 @@ public class ApplicationController  {
     @FXML private CheckBox itemStatusField;
     @FXML
     private CheckBox checkBox;
-
+    private Stage controllerStage;
     private ObservableList<Item> masterData = FXCollections.observableArrayList();
     private static boolean chck;
-    private static final String ITEMS_FILE_NAME = "data/Item.txt";
+    //default file path that can be changed by the user
+    private static final String ITEMS_FILE_NAME = "data/Item2.txt";
 
-    /**
-     * Just add some sample data in the constructor.
+    /*
+      Just add some sample data in the constructor.
      */
     public ApplicationController() {
 
@@ -75,21 +73,21 @@ public class ApplicationController  {
 
     }
 
-    /**
-     * Initializes the controller class. This method is automatically called
-     * after the fxml file has been loaded.
-     *
-     * Initializes the table columns and sets up sorting and filtering.
+    /*
+     Initializes the controller class. This method is automatically called
+     after the fxml file has been loaded.
+
+     Initializes the table columns and sets up sorting and filtering.
      */
     @FXML
     private void initialize() {
 
-        //Add Tool Tips.
+        //Add Tool Tips, for each field.
         Tooltip itemNameToolTip = new Tooltip("Add an Item");
         itemNameToolTip.setFont(Font.font("Verdana", 10));
         itemNameField.setTooltip(itemNameToolTip);
 
-        Tooltip itemDescToolTip = new Tooltip("Add an Item Description (255 Chars)");
+        Tooltip itemDescToolTip = new Tooltip("Add an Item Description (1 to 256 Chars)");
         itemDescToolTip.setFont(Font.font("Verdana", 10));
         itemDescriptionField.setTooltip(itemDescToolTip);
 
@@ -107,9 +105,7 @@ public class ApplicationController  {
         // 0. Initialize the columns.
         itemNameColumn.setCellValueFactory(cellData -> cellData.getValue().itemNameProperty());
 
-        //itemDescriptionColumn.setCellValueFactory(cellData -> cellData.getValue().itemDescriptionProperty());
-        //itemDescriptionColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-
+        //allows for user alteration and initialization
         itemDescriptionColumn.setEditable(true);
         itemDescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("itemDescription"));
         itemDescriptionColumn.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -118,7 +114,8 @@ public class ApplicationController  {
         itemDueDateColumn.setCellValueFactory(cellData -> cellData.getValue().itemDueDateProperty());
         itemDueDateColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         itemStatusColumn.setCellValueFactory(cellData -> cellData.getValue().itemStatusProperty());
-        isCompleteColumn.setCellValueFactory(cellData -> cellData.getValue().isCompleteProperty());
+        isCompleteColumn.setCellValueFactory(cellData->cellData.getValue().isCompleteProperty());
+        isCompleteColumn.setCellFactory(cellData ->new CheckBoxTableCell<Item, Boolean>());
 
         itemTable.getColumns().setAll(itemNameColumn, itemDescriptionColumn,itemDueDateColumn,itemStatusColumn, isCompleteColumn);
         itemTable.setEditable(true);
@@ -128,7 +125,7 @@ public class ApplicationController  {
         //Modifying the Description property
 
 
-
+    //filtering and sorting
 
         // 1. Wrap the ObservableList in a FilteredList (initially display all data).
         FilteredList<Item> filteredData = new FilteredList<>(masterData, p -> true);
@@ -144,7 +141,7 @@ public class ApplicationController  {
                 // Compare first name and last name of every person with filter text.
                 String lowerCaseFilter = newValue.toLowerCase();
 
-                if (item.getItemStatus().toLowerCase().trim().indexOf(lowerCaseFilter) != -1)
+                if (item.getItemStatus().toLowerCase().trim().contains(lowerCaseFilter))
                 {
                     return true; // Filter matches first name.
                 }
@@ -163,6 +160,12 @@ public class ApplicationController  {
         itemTable.setItems(sortedData);
     }
 
+//defines and initializes the stage
+    public void setStage(Stage stg)
+    {
+        controllerStage = stg;
+    }
+//checkbox defined
     @FXML
     void checkBoxInitialize(ActionEvent event) {
         chck = checkBox.isSelected() ? true : false;
@@ -170,21 +173,15 @@ public class ApplicationController  {
             n.setIsComplete(chck);
         }
     }
-
+//load function
     public void LoadDatafromFileToCollections()
     {
         List<Item> items = LoadDatafromFileToCollections(ITEMS_FILE_NAME);
 
-        // let's print all the meta data.
-        /*
-        for (Item b : items)
-        {
-            System.out.println("Array == " + b);
-        }
-        */
 
     }
 
+    //reads filename and provides respective items
     public  List<Item> LoadDatafromFileToCollections(String fileName)
     {
         List<Item> items = new ArrayList<>();
@@ -195,7 +192,6 @@ public class ApplicationController  {
             // loop until all lines are read
             while (line != null)
             {
-                //System.out.println("****Value of line " + line);
                 String[] attributes = line.split("\\|");
 
                 Item itm = createItem(attributes);
@@ -212,14 +208,14 @@ public class ApplicationController  {
         return items;
     }
 
-    private static Item createItem(String[] metadata)
+    //creates items with their fields as seen in the table
+    public static Item createItem(String[] metadata)
     {
         String itemname = metadata[0];
         String itemdescription = metadata[1];
         String itemdate = metadata[2];
         String status = metadata[3];
 
-        //boolean isDelete = metadata[5];
         boolean isDelete = false;
 
         // create and return book of this metadata
@@ -229,7 +225,7 @@ public class ApplicationController  {
         }
         return new Item(itemname, itemdescription,itemdate, status, isDelete );
     }
-
+    //reset the name, desc, and checkbox
     @FXML
     protected void resetFields(ActionEvent event)
     {
@@ -239,10 +235,12 @@ public class ApplicationController  {
     }
 
 
+    //loads the data using the previous function, but with more user control
     @FXML
     protected void loadDataItem(ActionEvent event)
     {
         boolean bStatusFlag  = false;
+        String filename = "";
         ObservableList<Item> reloadData = FXCollections.observableArrayList();
 
         Alert a =
@@ -252,7 +250,25 @@ public class ApplicationController  {
         Optional<ButtonType> confirm = a.showAndWait();
         if (confirm.isPresent() && confirm.get() == ButtonType.YES)
         {
-            List<Item> items = LoadDatafromFileToCollections(ITEMS_FILE_NAME);
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save Item Data File");
+            File selectedFile = fileChooser.showOpenDialog(controllerStage);
+            if (selectedFile != null) {
+                System.out.println("File PATH " + selectedFile);
+                filename = selectedFile.getPath();
+            }
+            else
+            {
+                System.out.println("File not found");
+
+            }
+
+            System.out.println("File name " + filename);
+
+            List<Item> items = LoadDatafromFileToCollections(filename);
+
+            System.out.println("Size of items "+ items.size());
+
             for (Item b : items)
             {
                 if ( b.getItemStatus().equals("Complete"))
@@ -266,6 +282,8 @@ public class ApplicationController  {
         }
     }
 
+
+    //adds an item to the table
     @FXML
     protected void addItem(ActionEvent event)
     {
@@ -329,8 +347,9 @@ public class ApplicationController  {
             ObservableList<Item> data = itemTable.getItems();
 
             //Check if the item is unique.
+            //Also ensure that the program can handle said items
             int itemsize = data.size();
-            if (itemsize > 99) //Only 100 Unique items needs to be added.
+            if (itemsize > 999999999)
             {
                 // Nothing selected.
                 Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -368,11 +387,10 @@ public class ApplicationController  {
                 itemDescriptionField.setText("");
                 itemStatusField.setText("");
             }
-            //initialize();
         }
 
     }
-
+    //deletes the item from the table
     @FXML
     protected void deleteItem(ActionEvent event)
     {
@@ -381,7 +399,6 @@ public class ApplicationController  {
 
         if (selectedIndex >= 0)
         {
-            // itemTable.getItems().remove(selectedIndex);
 
             //Create a new List to hold values.
             ObservableList<Item> newItemdata = FXCollections.observableArrayList();
@@ -406,6 +423,7 @@ public class ApplicationController  {
         }
     }
 
+    //clears out everything in the table, but does not touch the file itself, unless it is saved
     @FXML
     protected void clearAllItems(ActionEvent event)
     {
@@ -441,8 +459,12 @@ public class ApplicationController  {
 
     }
 
+    //writes table data to a user defined file
     @FXML
-    public void saveData(ActionEvent event) throws IOException {
+    public void saveData(ActionEvent event) throws IOException
+    {
+        String filename = "";
+
         Alert a =
                 new Alert(Alert.AlertType.CONFIRMATION,
                         "Are you sure you want to Save, this will overwrite on existing data file?", ButtonType.YES,
@@ -450,20 +472,30 @@ public class ApplicationController  {
         Optional<ButtonType> confirm = a.showAndWait();
         if (confirm.isPresent() && confirm.get() == ButtonType.YES)
         {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save Item Data File");
+            File selectedFile = fileChooser.showSaveDialog(controllerStage);
+            if (selectedFile != null) {
+                System.out.println("File name " + selectedFile);
+                filename = selectedFile.getPath();
+            }
+            else
+            {
+                System.out.println("File not found");
 
-            //If the file exist delete it and save new info
-            File file = new File(ITEMS_FILE_NAME);
+            }
+
+            File file = new File(filename);
             if (file.exists()) {
                 file.delete();
             }
 
-            try (PrintWriter writer = new PrintWriter(new FileOutputStream(new File(ITEMS_FILE_NAME), true /* append = true */))) {
-                //writer.println(root.getValue() + "=" + parent);
+
+            try (PrintWriter writer = new PrintWriter(new FileOutputStream(new File(filename), true /* append = true */))) {
                 for (int row = 0; row < itemTable.getItems().size(); row++) {
                     StringBuilder stringBuilder = new StringBuilder(255);
                     Item readItem = itemTable.getItems().get(row);
                     stringBuilder.append(readItem.getItemName() + "|" + readItem.getItemDescription() + "|" + readItem.getItemDueDate() + "|" + readItem.getItemStatus());
-                    //System.out.println("DATA TO BE WRITTEN = " + stringBuilder.toString());
                     writer.println(stringBuilder.toString());
                 }
                 writer.close();
@@ -473,7 +505,7 @@ public class ApplicationController  {
         }
     }
 
-
+    //exits the application
     @FXML
     protected void closeApplication(ActionEvent event)
     {
@@ -497,3 +529,19 @@ public class ApplicationController  {
 
 
 }
+/*
+Handle all the aspects of the table as well as the File I/O associated with it
+Events are defined by user input through the GUI which can be recorded in the back-end portion of the code
+Account for errors and bugs in user program manipulation and other mishaps
+Ensure content restrictions are in place as well
+
+A user shall be able to add a new item to the list
+A user shall be able to remove an item from the list
+A user shall be able to clear the list of all items
+A user shall be able to edit the description of an item within the list
+A user shall be able to edit the due date of an item within the list
+A user shall be able to mark an item in the list as either complete or incomplete
+A user shall be able to display all of the existing items in the list
+A user shall be able to display only the incomplete items in the list
+A user shall be able to display only the completed items in the list
+ */

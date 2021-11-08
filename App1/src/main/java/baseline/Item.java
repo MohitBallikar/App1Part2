@@ -1,3 +1,7 @@
+/*
+ *  UCF COP3330 Fall 2021 Application Assignment 1 Solution
+ *  Copyright 2021 Mohit Ballikar
+ */
 package baseline;
 
 import javafx.beans.property.BooleanProperty;
@@ -6,7 +10,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 //Simple model class for the Item table.
-
+//Getter and setter used to simplify calling for values, testing this can be seen through the controller
 public class Item {
 
     private final StringProperty itemName;
@@ -14,7 +18,7 @@ public class Item {
     private final StringProperty itemDueDate;
     private final StringProperty itemStatus;
     private final BooleanProperty isComplete;
-
+//deinfes the attribute of the item with its parameters listed
     public Item(String itemName, String itemDescription, String itemDueDate, String itemStatus , boolean isComplete)
     {
         this.itemName = new SimpleStringProperty(itemName);
@@ -24,7 +28,7 @@ public class Item {
         this.isComplete = new SimpleBooleanProperty(isComplete);
     }
 
-
+//getters and setters below
     public String getItemName() {
         return itemName.get();
     }
@@ -77,10 +81,14 @@ public class Item {
     }
 
 
-
+//concatenation for the overall output of the string with item information
     @Override
     public String toString() {
         return "Item [itemName=" + itemName + ", itemDescription=" + itemDescription + " , itemDueDate=" + itemDueDate + ", itemStatus=" + itemStatus + ", isComplete=" + isComplete + "]";
     }
 
 }
+/*
+Provide values for the controller and other aspects to call from to avoid redundancy
+
+ */
